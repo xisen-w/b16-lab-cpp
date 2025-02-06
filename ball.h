@@ -16,6 +16,15 @@ public:
   void step(double dt) ;
   void display() ;
 
+  // Add these getter/setter methods
+  double getX() const { return x; }
+  double getY() const { return y; }
+  void setPosition(double newX, double newY) {
+    // Add bounds checking
+    if (newX >= xmin + r && newX <= xmax - r) x = newX;
+    if (newY >= ymin + r && newY <= ymax - r) y = newY;
+  }
+
 protected:
   // Data members
   // Position and velocity of the ball

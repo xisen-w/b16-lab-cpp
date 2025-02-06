@@ -90,5 +90,73 @@ The motion will show:
 - Gradually increasing downward speed between floor bounces (due to gravity)
 - Continuous horizontal motion with direction changes at wall collisions
 
-## Task 2: Implementing a more realistic ball simulation
+## Task 2: Running the program. 
+
+The last question can be answered empirically, by com-
+piling and running the program. In order to do so:
+• Make sure that test-ball is the target that will be run. See Figure 2 for details. For
+Windows system, it should be e.g. test-ball-win.
+• Select Run Without Debugging in the Run menu (at the top of the screen).
+This will automatically compile and link the program to create and run the ball executable
+for you. A console window will pop up, displaying the output of the program. Does it look
+reasonable?
+
+Snippet:
+```
+0.01 -0.00877778
+0.02 -0.0284444
+0.03 -0.059
+0.04 -0.100444
+0.05 -0.152778
+0.06 -0.216
+0.07 -0.290111
+0.08 -0.375111
+```
+Looks quite reasonable to me.
+
+## Task 3 & Task 4: 
+
+Reasonable.
+
+Section 3.3 simply explains the differences between public, private, and protected. 
+
+We first declare, and then define. 
+
+## Task 5: Member functions and separation of concerns. 
+
+By isolating data members
+in the protected part of the class definition, the representation of the data (protected data
+members) can be separated from the operations that apply to it (public member functions).
+Answer the following questions:
+Q: **How should the class be changed so that a user could be able to get and set the position**
+of the ball?
+- We should add public getter and setter methods (accessors and mutators). 
+
+Q: **The member functions of a class are often said to encode its “behaviour”. Can you find a practical example demonstrating why separating the data representation from its behaviour is useful?**
+
+It is useful because it allows us to change the data representation without changing the behavior of the class. Eg, we can change the data representation of the ball from a circle to a square, but the behavior of the ball will remain the same. Or, coordinate transformation could also work. 
+
+```cpp
+class Ball : public Simulation
+{
+protected:
+    // Could change internal representation
+    double radius;    // distance from origin
+    double theta;     // angle
+    // instead of x,y coordinates
+
+public:
+    // But keep the same interface
+    double getX() const { return radius * cos(theta); }
+    double getY() const { return radius * sin(theta); }
+    void setPosition(double x, double y) {
+        radius = sqrt(x*x + y*y);
+        theta = atan2(y, x);
+    }
+```
+
+
+
+
+
 
