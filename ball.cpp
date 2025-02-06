@@ -12,6 +12,18 @@ Ball::Ball()
 xmin(-1), xmax(1), ymin(-1), ymax(1)
 { }
 
+Ball::Ball(double initialX, double initialY, double initialVx, double initialVy)
+: r(0.1), g(9.8), m(1),
+xmin(-1), xmax(1), ymin(-1), ymax(1)
+{
+  // Use setPosition to ensure bounds checking
+  setPosition(initialX, initialY);
+  
+  // Set velocities
+  vx = initialVx;
+  vy = initialVy;
+}
+
 void Ball::step(double dt)
 {
   double xp = x + vx * dt ;

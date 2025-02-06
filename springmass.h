@@ -84,9 +84,11 @@ public:
   double getEnergy() const ;
 
 protected:
-
-/* INCOMPLETE: TYPE YOUR CODE HERE */
-
+  Mass* mass1;        // First mass connected to spring
+  Mass* mass2;        // Second mass connected to spring
+  double naturalLength;  // Rest length of spring
+  double stiffness;     // Spring constant k
+  double damping;       // Damping coefficient
 } ;
 
 /* ---------------------------------------------------------------- */
@@ -97,20 +99,20 @@ class SpringMass : public Simulation
 {
 public:
   SpringMass(double gravity = MOON_GRAVITY) ;
+  
+  // Add methods to setup simulation
+  void addMass(Mass* mass);
+  void addSpring(Spring* spring);
+  
+  // Required by Simulation interface
   void step(double dt) ;
   void display() ;
   double getEnergy() const ;
 
-
-/* INCOMPLETE: TYPE YOUR CODE HERE */
-
-
 protected:
   double gravity ;
-
-
-/* INCOMPLETE: TYPE YOUR CODE HERE */
-
+  std::vector<Mass*> masses;     // Store n masses
+  std::vector<Spring*> springs;   // Store m springs
 } ;
 
 #endif /* defined(__springmass__) */

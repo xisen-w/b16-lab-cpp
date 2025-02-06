@@ -57,18 +57,42 @@ double Mass::getMass() const
 
 double Mass::getEnergy(double gravity) const
 {
-  double energy = 0 ;
-
-/* INCOMPLETE: TYPE YOUR CODE HERE */
-
-  return energy ;
+    double energy = 0;
+    
+    // Kinetic energy: 1/2 * m * v^2
+    energy += 0.5 * mass * velocity.norm2();
+    
+    // Potential energy: m * g * h
+    // Note: y-coordinate represents height, and y=0 is the reference level
+    energy += mass * gravity * position.y;
+    
+    return energy;
 }
 
 void Mass::step(double dt)
 {
-
-/* INCOMPLETE: TYPE YOUR CODE HERE */
-
+    // Update position using current velocity
+    Vector2 newPosition = position + velocity * dt;
+    
+    // Check boundaries and handle collisions
+    if (newPosition.x >= xmin + radius && newPosition.x <= xmax - radius) {
+        position.x = newPosition.x;
+    } else {
+        velocity.x = -velocity.x; // Elastic collision with walls
+    }
+    
+    if (newPosition.y >= ymin + radius && newPosition.y <= ymax - radius) {
+        position.y = newPosition.y;
+    } else {
+        velocity.y = -velocity.y; // Elastic collision with floor/ceiling
+    }
+    
+    // Update velocity using F = ma -> a = F/m
+    // v = v0 + at -> v = v0 + (F/m)t
+    velocity = velocity + (force / mass) * dt;
+    
+    // Reset force for next step
+    force = Vector2(0, 0);
 }
 
 /* ---------------------------------------------------------------- */
@@ -92,11 +116,27 @@ Mass * Spring::getMass2() const
 
 Vector2 Spring::getForce() const
 {
-  Vector2 F ;
-
-/* INCOMPLETE: TYPE YOUR CODE HERE */
-
-  return F ;
+  // Get positions and velocities
+  Vector2 x1 = mass1->getPosition();
+  Vector2 x2 = mass2->getPosition();
+  Vector2 v1 = mass1->getVelocity();
+  Vector2 v2 = mass2->getVelocity();
+  
+  // Calculate current length and unit vector
+  Vector2 displacement = x2 - x1;  // (x2 - x1)
+  double l = displacement.norm();   // l = ||x2 - x1||
+  Vector2 u12 = displacement / l;   // u12 = (x2 - x1)/l
+  
+  // Calculate spring force: F1 = k(l - l0)u12
+  Vector2 springForce = stiffness * (l - naturalLength) * u12;
+  
+  // Calculate damping force: F1 = d*v12, where v12 = ((v2-v1)·u12)u12
+  Vector2 relativeVelocity = v2 - v1;
+  double projectedVelocity = dot(relativeVelocity, u12);
+  Vector2 dampingForce = damping * projectedVelocity * u12;
+  
+  // Total force is sum of spring force and damping force
+  return springForce + dampingForce;
 }
 
 double Spring::getLength() const
@@ -132,31 +172,65 @@ SpringMass::SpringMass(double gravity)
 : gravity(gravity)
 { }
 
-void SpringMass::display()
-{
-
-/* INCOMPLETE: TYPE YOUR CODE HERE */
-
+void SpringMass::addMass(Mass* mass) {
+    masses.push_back(mass);
 }
 
-double SpringMass::getEnergy() const
-{
-  double energy = 0 ;
-
-/* INCOMPLETE: TYPE YOUR CODE HERE */
-
-  return energy ;
+void SpringMass::addSpring(Spring* spring) {
+    springs.push_back(spring);
 }
 
-void SpringMass::step(double dt)
-{
-  Vector2 g(0,-gravity) ;
-
-/* INCOMPLETE: TYPE YOUR CODE HERE */
-
+void SpringMass::step(double dt) {
+    Vector2 g(0, -gravity);
+    
+    // Set initial gravitational force on all masses
+    for(Mass* mass : masses) {
+        Vector2 gravityForce = g * mass->getMass();
+        mass->setForce(gravityForce);
+    }
+    
+    // Add spring forces to connected masses
+    for(Spring* spring : springs) {
+        Vector2 f1 = spring->getForce();
+        Mass* m1 = spring->getMass1();
+        Mass* m2 = spring->getMass2();
+        
+        m1->addForce(f1);        // Add F1 to mass1
+        m2->addForce(-1 * f1);   // Add -F1 (F2) to mass2
+    }
+    
+    // Update all masses
+    for(Mass* mass : masses) {
+        mass->step(dt);
+    }
 }
 
+void SpringMass::display() {
+    // Display all mass positions
+    for(Mass* mass : masses) {
+        std::cout << *mass << " ";
+    }
+    // Display all spring lengths
+    for(Spring* spring : springs) {
+        std::cout << *spring << " ";
+    }
+    std::cout << std::endl;
+}
 
-/* INCOMPLETE: TYPE YOUR CODE HERE */
+double SpringMass::getEnergy() const {
+    double energy = 0;
+    
+    // Sum energy of all masses (kinetic + potential)
+    for(Mass* mass : masses) {
+        energy += mass->getEnergy(gravity);
+    }
+    
+    // Add potential energy of all springs
+    for(Spring* spring : springs) {
+        energy += spring->getEnergy();
+    }
+    
+    return energy;
+}
 
 

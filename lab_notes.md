@@ -134,7 +134,7 @@ of the ball?
 
 Q: **The member functions of a class are often said to encode its “behaviour”. Can you find a practical example demonstrating why separating the data representation from its behaviour is useful?**
 
-It is useful because it allows us to change the data representation without changing the behavior of the class. Eg, we can change the data representation of the ball from a circle to a square, but the behavior of the ball will remain the same. Or, coordinate transformation could also work. 
+- It is useful because it allows us to change the data representation without changing the behavior of the class. Eg, we can change the data representation of the ball from a circle to a square, but the behavior of the ball will remain the same. Or, coordinate transformation could also work. 
 
 ```cpp
 class Ball : public Simulation
@@ -154,6 +154,185 @@ public:
         theta = atan2(y, x);
     }
 ```
+
+## Task 6:Understanding constructors. 
+
+The constructor Ball() does not allow the use of the class to choose a custom initial position or velocity of the ball. Design an alternative constructor that would allow to do so upon class instantiation.
+
+Our solution:
+
+```cpp
+Ball::Ball(double initialX, double initialY, double initialVx, double initialVy)
+: r(0.1), g(9.8), m(1),
+xmin(-1), xmax(1), ymin(-1), ymax(1)
+{
+  // Use setPosition to ensure bounds checking
+  setPosition(initialX, initialY);
+  
+  // Set velocities
+  vx = initialVx;
+  vy = initialVy;
+}
+```
+
+Now we can create a ball with a custom initial position and velocity.
+
+Like:
+```cpp
+// Example usage:
+Ball ball1;  // Uses default constructor (0,0) position, (0.3,-0.1) velocity
+Ball ball2(0.5, 0.5, -0.2, 0.4);  // Custom position (0.5,0.5) and velocity (-0.2,0.4)
+```
+
+## Task 7: Programming principles.
+
+What is the distinction between a class declaration, definition, implementation, and instantiation?
+
+- Class declaration: The class is declared, but not defined.
+- Class definition: The class is declared and defined.
+- Class implementation: The class is implemented.
+- Class instantiation: The class is instantiated.
+
+Example:
+
+```cpp
+class Ball;                              // 1. Declaration: Just the name and interface (compiler promise)
+
+class Ball { double x; void move(); };   // 2. Definition: Full class structure and members
+
+void Ball::move() { x += 1; }           // 3. Implementation: Actual code for methods
+
+Ball b1;                                 // 4. Stack Instantiation: Create object
+Ball* b2 = new Ball();                  // 5. Heap Instantiation: Create object dynamically
+```
+
+## Task 8 & 9 : 
+
+IDE is cool! Not that suitable for mac tho. 
+
+## Task 10: Interface
+
+Thus Simulation declares two virtual member functions step() and display(). The = 0 suffix tells the compiler that it should not expect Simulation to provide a de nition of these functions. Rather, this is left to the compiler. Answer the following questions:
+
+Can you replace the for loop in the main function de ned in test-ball.cpp with the instruction run(ball, dt)?
+
+```cpp
+// In simulation.h
+class Simulation {
+public:
+    virtual void step(double dt) = 0;    // Pure virtual functions
+    virtual void display() = 0;
+};
+
+// In test-ball.cpp
+void run(Simulation& s, double dt) {
+    for (int i = 0; i < 100; ++i) {
+        s.step(dt);
+        s.display();
+    }
+}
+
+int main() {
+    Ball ball;
+    run(ball, dt);    // This works with virtual functions
+    return 0;
+}
+```
+
+
+What would happen if Simulation did not declare step and display to be virtual? Would run still work as expected? If not, what would happen?
+
+Without virtual functions:
+The compiler would use "static binding" instead of "dynamic binding"
+It would call Simulation::step() and Simulation::display() instead of Ball::step() and Ball::display()
+This would likely cause:
+Compilation error if Simulation doesn't implement these methods
+Or incorrect behavior if it does implement them, as it would not use Ball's specific implementations
+Here's the difference:
+
+```cpp
+// Without virtual (WRONG behavior)
+class Simulation {
+    void step(double dt) { /* base version */ }
+};
+
+// With virtual (CORRECT behavior)
+class Simulation {
+    virtual void step(double dt) = 0;  // Forces derived classes to implement
+};
+```
+
+## Task 11: Complete the Mass class. 
+
+Start by completing the implementation Mass class by implementing the member functions getEnergy() and step()
+
+The Mass class implementation now includes two key physics functions: getEnergy() calculates the total mechanical energy of the mass by summing its kinetic energy (½mv²) and gravitational potential energy (mgh), while step() handles the time evolution of the system by updating position and velocity using Newton's laws of motion. The step function also includes collision handling with the boundaries of the container, implementing elastic collisions by reversing the appropriate velocity component when the mass hits a wall, and updates the velocity based on accumulated forces before resetting the force accumulator for the next timestep.
+
+## Task 12: Complete the Spring class. 
+
+Gets positions (x1, x2) and velocities (v1, v2) of both masses
+Calculates spring geometry:
+Displacement vector (x2 - x1)
+Current length (l)
+Unit direction vector (u12)
+Calculates spring force:
+F1 = k(l - l0)u12
+Where k is stiffness and l0 is naturalLength
+Calculates damping force:
+Projects relative velocity onto spring direction
+F1 = d((v2-v1)·u12)u12
+Where d is damping coefficient
+Returns total force (spring + damping)
+
+Task 13:
+
+This implementation:
+Uses vectors to store multiple masses and springs
+Handles gravity and spring forces properly
+Updates all masses in the system
+Displays state of all masses and springs
+Calculates total system energy
+
+Check sample usage here: 
+
+```cpp 
+int main() {
+    SpringMass sim(MOON_GRAVITY);
+    
+    // Create and add masses
+    Mass* m1 = new Mass(Vector2(-0.5, 0), Vector2(), 0.05, 0.02);
+    Mass* m2 = new Mass(Vector2(0.5, 0), Vector2(), 0.05, 0.02);
+    sim.addMass(m1);
+    sim.addMass(m2);
+    
+    // Create and add spring
+    Spring* spring = new Spring(m1, m2, 0.95, 1.0);
+    sim.addSpring(spring);
+    
+    // Run simulation
+    const double dt = 1.0/30;
+    for(int i = 0; i < 100; ++i) {
+        sim.step(dt);
+        sim.display();
+    }
+    
+    // Cleanup
+    delete m1;
+    delete m2;
+    delete spring;
+    
+    return 0;
+}
+```
+
+
+
+
+
+
+
+
+
 
 
 

@@ -11,8 +11,13 @@
 class Ball : public Simulation
 {
 public:
-  // Constructors and member functions
+  // Default constructor
   Ball() ;
+  
+  // Custom constructor with initial position and velocity
+  Ball(double initialX, double initialY, double initialVx, double initialVy) ;
+
+  // Member functions
   void step(double dt) ;
   void display() ;
 
