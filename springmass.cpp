@@ -184,9 +184,9 @@ void SpringMass::step(double dt) {
     Vector2 g(0, -gravity);
     
     // Set initial gravitational force on all masses
-    for(Mass* mass : masses) {
-        Vector2 gravityForce = g * mass->getMass();
-        mass->setForce(gravityForce);
+    for(size_t i = 0; i < masses.size(); ++i) {
+        Vector2 gravityForce = g * masses[i]->getMass();
+        masses[i]->setForce(gravityForce);
     }
     
     // Add spring forces to connected masses
@@ -206,13 +206,15 @@ void SpringMass::step(double dt) {
 }
 
 void SpringMass::display() {
-    // Display all mass positions
-    for(Mass* mass : masses) {
-        std::cout << *mass << " ";
+    // Output format: x1 y1 x2 y2 spring_length
+    for(size_t i = 0; i < masses.size(); ++i) {
+        Vector2 pos = masses[i]->getPosition();
+        std::cout << pos.x << " " << pos.y;
+        if(i < masses.size() - 1) std::cout << " ";
     }
-    // Display all spring lengths
+    
     for(Spring* spring : springs) {
-        std::cout << *spring << " ";
+        std::cout << " " << spring->getLength();
     }
     std::cout << std::endl;
 }
