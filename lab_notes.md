@@ -36,13 +36,9 @@ It uses cout to print the x and y coordinates of the ball.
 
 This is handled by the integrator implemented in step(). The integrator is a function that updates the position and velocity of the ball based on the forces acting on it. 
 
-#### Energy Conservation:
-The integrator **does not** conserve total energy due to:
-- Simple velocity reversal on collision.
-- Euler integration for position and velocity updates.
-- No elastic collision physics.
-- Gravity approximation using basic kinematics.
+#### Energy Conservation: Yes! It's very elastic. 
 
+Another note is that it's quite discrete and the more "precision" you give for the time the better the plot is. 
 
 #### Now look at test-ball.cpp and answer the following question: What do you expect the output of your program to be?
 
@@ -284,7 +280,7 @@ F1 = d((v2-v1)·u12)u12
 Where d is damping coefficient
 Returns total force (spring + damping)
 
-Task 13:
+## Task 13:
 
 This implementation:
 Uses vectors to store multiple masses and springs
@@ -324,6 +320,38 @@ int main() {
     return 0;
 }
 ```
+
+## Task 14 & 15:
+
+Implemented & Visualised. Looking quite cool! 
+
+I tried to run it like a video (of different frames), and it works quite well. 
+
+## Task 16: OpenGL
+
+Understand how to open a window and draw in it. Then navigate in Visual Studio Code to the file graphics.h file and inspect it. This module does a few things:
+• It includes the OpenGL header files (glut.h). This means that, by including graphics.h, your program will have access to the OpenGL functions as well. GLUT is an utility library, companion to OpenGL, which handles windows and events | more on this later.
+• It declares a function run() that takes as input an object of type Simulation and a timeStep. This function never returns; instead, it enters a loop that handles the stream of events from the graphical user interface (e.g. a window being resized). It also runs the simulation by repeatedly calling the member functions step (to advance the simulation) and display (to update a corresponding figure).
+• It de nes a class Figure which simpli es opening a window and drawing in it.
+
+A: We first understand the components in graphics.h
+
+```cpp
+// Key components in graphics.h
+class Figure {
+public:
+    void drawCircle(double x, double y, double r);  // Draw a circle
+    void drawLine(double x1, double y1, double x2, double y2);  // Draw a line
+    void update();  // Update the display
+};
+
+void run(Simulation* simulation, double timeStep);  // Main animation loop
+```
+
+
+
+
+
 
 
 
