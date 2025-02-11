@@ -12,35 +12,36 @@
 /* ---------------------------------------------------------------- */
 
 Mass::Mass()
-: position(), velocity(), force(), mass(1), radius(1)
+: position(), velocity(), force(), mass(1), radius(1),
+  xmin(-1), xmax(1), ymin(-1), ymax(1), zmin(-1), zmax(1)
 { }
 
-Mass::Mass(Vector2 position, Vector2 velocity, double mass, double radius)
+Mass::Mass(Vector3 position, Vector3 velocity, double mass, double radius)
 : position(position), velocity(velocity), force(), mass(mass), radius(radius),
-xmin(-1),xmax(1),ymin(-1),ymax(1)
+  xmin(-1), xmax(1), ymin(-1), ymax(1), zmin(-1), zmax(1)
 { }
 
-void Mass::setForce(Vector2 f)
+void Mass::setForce(Vector3 f)
 {
   force = f ;
 }
 
-void Mass::addForce(Vector2 f)
+void Mass::addForce(Vector3 f)
 {
   force = force + f ;
 }
 
-Vector2 Mass::getForce() const
+Vector3 Mass::getForce() const
 {
   return force ;
 }
 
-Vector2 Mass::getPosition() const
+Vector3 Mass::getPosition() const
 {
   return position ;
 }
 
-Vector2 Mass::getVelocity() const
+Vector3 Mass::getVelocity() const
 {
   return velocity ;
 }
@@ -55,44 +56,43 @@ double Mass::getMass() const
   return mass ;
 }
 
-double Mass::getEnergy(double gravity) const
-{
+double Mass::getEnergy(double gravity) const {
     double energy = 0;
     
     // Kinetic energy: 1/2 * m * v^2
-    energy += 0.5 * mass * velocity.norm2();
+    energy = 0.5 * mass * velocity.norm2();
     
     // Potential energy: m * g * h
-    // Note: y-coordinate represents height, and y=0 is the reference level
-    energy += mass * gravity * position.y;
+    energy += mass * gravity * (position.y + 1);  // This is fine
     
     return energy;
 }
 
 void Mass::step(double dt)
 {
-    // Update position using current velocity
-    Vector2 newPosition = position + velocity * dt;
+    velocity = velocity + (force / mass) * dt;
+    Vector3 newPosition = position + velocity * dt;
     
-    // Check boundaries and handle collisions
+    // Check boundaries and handle collisions for all dimensions
     if (newPosition.x >= xmin + radius && newPosition.x <= xmax - radius) {
         position.x = newPosition.x;
     } else {
-        velocity.x = -velocity.x; // Elastic collision with walls
+        velocity.x = -velocity.x;
     }
     
     if (newPosition.y >= ymin + radius && newPosition.y <= ymax - radius) {
         position.y = newPosition.y;
     } else {
-        velocity.y = -velocity.y; // Elastic collision with floor/ceiling
+        velocity.y = -velocity.y;
     }
     
-    // Update velocity using F = ma -> a = F/m
-    // v = v0 + at -> v = v0 + (F/m)t
-    velocity = velocity + (force / mass) * dt;
+    if (newPosition.z >= zmin + radius && newPosition.z <= zmax - radius) {
+        position.z = newPosition.z;
+    } else {
+        velocity.z = -velocity.z;
+    }
     
-    // Reset force for next step
-    force = Vector2(0, 0);
+    force = Vector3(0, 0, 0);
 }
 
 /* ---------------------------------------------------------------- */
@@ -104,36 +104,26 @@ Spring::Spring(Mass * mass1, Mass * mass2, double naturalLength, double stiffnes
 naturalLength(naturalLength), stiffness(stiffness), damping(damping)
 { }
 
-Mass * Spring::getMass1() const
-{
-  return mass1 ;
-}
-
-Mass * Spring::getMass2() const
-{
-  return mass2 ;
-}
-
-Vector2 Spring::getForce() const
+Vector3 Spring::getForce() const
 {
   // Get positions and velocities
-  Vector2 x1 = mass1->getPosition();
-  Vector2 x2 = mass2->getPosition();
-  Vector2 v1 = mass1->getVelocity();
-  Vector2 v2 = mass2->getVelocity();
+  Vector3 x1 = mass1->getPosition();
+  Vector3 x2 = mass2->getPosition();
+  Vector3 v1 = mass1->getVelocity();
+  Vector3 v2 = mass2->getVelocity();
   
   // Calculate current length and unit vector
-  Vector2 displacement = x2 - x1;  // (x2 - x1)
+  Vector3 displacement = x2 - x1;  // (x2 - x1)
   double l = displacement.norm();   // l = ||x2 - x1||
-  Vector2 u12 = displacement / l;   // u12 = (x2 - x1)/l
+  Vector3 u12 = displacement / l;   // u12 = (x2 - x1)/l
   
   // Calculate spring force: F1 = k(l - l0)u12
-  Vector2 springForce = stiffness * (l - naturalLength) * u12;
+  Vector3 springForce = stiffness * (l - naturalLength) * u12;
   
   // Calculate damping force: F1 = d*v12, where v12 = ((v2-v1)·u12)u12
-  Vector2 relativeVelocity = v2 - v1;
+  Vector3 relativeVelocity = v2 - v1;
   double projectedVelocity = dot(relativeVelocity, u12);
-  Vector2 dampingForce = damping * projectedVelocity * u12;
+  Vector3 dampingForce = damping * projectedVelocity * u12;
   
   // Total force is sum of spring force and damping force
   return springForce + dampingForce;
@@ -141,14 +131,14 @@ Vector2 Spring::getForce() const
 
 double Spring::getLength() const
 {
-  Vector2 u = mass2->getPosition() - mass1->getPosition() ;
+  Vector3 u = mass2->getPosition() - mass1->getPosition() ;
   return u.norm() ;
 }
 
 double Spring::getEnergy() const {
-  double length = getLength() ;
-  double dl = length - naturalLength;
-  return 0.5 * stiffness * dl * dl ;
+    double length = getLength();
+    double dl = length - naturalLength;
+    return 0.5 * stiffness * dl * dl;  // This is correct
 }
 
 std::ostream& operator << (std::ostream& os, const Mass& m)
@@ -181,17 +171,17 @@ void SpringMass::addSpring(Spring* spring) {
 }
 
 void SpringMass::step(double dt) {
-    Vector2 g(0, -gravity);
+    Vector3 g(0, -gravity, 0);
     
     // Set initial gravitational force on all masses
     for(size_t i = 0; i < masses.size(); ++i) {
-        Vector2 gravityForce = g * masses[i]->getMass();
+        Vector3 gravityForce = g * masses[i]->getMass();
         masses[i]->setForce(gravityForce);
     }
     
     // Add spring forces to connected masses
     for(Spring* spring : springs) {
-        Vector2 f1 = spring->getForce();
+        Vector3 f1 = spring->getForce();
         Mass* m1 = spring->getMass1();
         Mass* m2 = spring->getMass2();
         
@@ -208,8 +198,8 @@ void SpringMass::step(double dt) {
 void SpringMass::display() {
     // Output format: x1 y1 x2 y2 spring_length
     for(size_t i = 0; i < masses.size(); ++i) {
-        Vector2 pos = masses[i]->getPosition();
-        std::cout << pos.x << " " << pos.y;
+        Vector3 pos = masses[i]->getPosition();
+        std::cout << pos.x << " " << pos.y << " " << pos.z;
         if(i < masses.size() - 1) std::cout << " ";
     }
     
@@ -222,12 +212,12 @@ void SpringMass::display() {
 double SpringMass::getEnergy() const {
     double energy = 0;
     
-    // Sum energy of all masses (kinetic + potential)
+    // Sum energy of all masses
     for(Mass* mass : masses) {
         energy += mass->getEnergy(gravity);
     }
     
-    // Add potential energy of all springs
+    // Add spring potential energy
     for(Spring* spring : springs) {
         energy += spring->getEnergy();
     }

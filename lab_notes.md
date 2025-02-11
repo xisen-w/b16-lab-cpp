@@ -348,6 +348,88 @@ public:
 void run(Simulation* simulation, double timeStep);  // Main animation loop
 ```
 
+## Task 17:
+
+The animation flow is:
+run(&springmass, 1.0/60) starts the loop
+Every 1/60 second:
+step() updates physics
+display() triggers redraw
+draw() is called by OpenGL to render the scene
+This creates smooth animation at 60fps
+
+## Task 18: Understand how this is implemented by using inheritance. 
+
+Once how tosolve the previous two tasks is clear, open test-ball-graphics.cpp and understand how this has been done by de ning a BallDrawable class, inheriting from Ball and Drawable. This is called multiple inheritance, and can be used to create \hybrid" classes which combine more than one parent classes. Look in particular at the implementation of the member functions draw()
+and update(). 
+
+Compare this with Figure 4 and answer the following questions:
+1. Which objects are of type Simulation and which of type Drawable?
+2. Which objects are creating an instance of Figure and when?
+3. Which objects are added as Drawable to the  gure and when?
+4. Which objects implement respectively: display, draw, and update?
+5. Which di erent purposes do these functions serve?
+Note also that the very  rst line of the main function in test-ball-graphics.cpp contains a call
+to glutInit(). This function initialises GLUT and OpenGL, making them ready for use. Do
+not forget to use it in your code later!
+
+```cpp
+// Both classes inherit from both Simulation and Drawable
+class BallDrawable : public Ball, public Drawable { ... }
+class SpringMassDrawable : public SpringMass, public Drawable
+
+2.Which objects create Figure instances?
+
+```cpp
+class BallDrawable {
+private:
+    Figure figure;  // Figure instance created in constructor
+public:
+    BallDrawable() : figure("Bouncing ball") {
+        figure.addDrawable(this);
+    }
+};
+
+class SpringMassDrawable {
+private:
+    Figure figure;  // Same pattern
+public:
+    SpringMassDrawable() : figure("Spring Mass System") {
+        figure.addDrawable(this);
+    }
+};
+```
+3.Which objects are added as Drawable?
+// In both cases, the class itself (this) is added to its Figure
+```cpp
+figure.addDrawable(this);  // 'this' is the Drawable object
+```
+
+4. Implementation of display/draw/update:
+```cpp
+class SpringMassDrawable {
+    void draw() {  // Implements Drawable::draw
+        // Actual drawing code here
+        figure.drawCircle(...);
+        figure.drawLine(...);
+    }
+    
+    void display() {  // Implements Simulation::display
+        figure.update();  // Updates the window
+    }```
+
+5. Different purposes:
+- display: Updates the window
+- draw: Draws the scene
+- update: Handles events and updates the display   
+
+
+
+
+
+
+
+
 
 
 
