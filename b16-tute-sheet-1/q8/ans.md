@@ -86,4 +86,46 @@ Adding a new shape (like Sphere) is simplified because:
 This demonstrates the power of inheritance and polymorphism in creating extensible, maintainable code.    
 
 
+Testing result:
 
+```
+
+=== Testing Shape Hierarchy ===
+
+Creating shapes...
+
+=== Initial Positions ===
+Point: Drawing Point at (1,2,3)
+Line: Drawing Line from (0,0,0) to (1,1,1)
+Cube: Drawing Cube with side 2 at (5,5,5)
+Sphere: Drawing Sphere with radius 1.5 at (3,3,3)
+Cuboid: Drawing Cuboid 3x2x1 at (1,1,1)
+
+=== Volume Tests ===
+Cube volume (should be 8): 8
+Sphere volume: 14.1372
+Cuboid volume (should be 6): 6
+
+=== Testing Polymorphism ===
+Drawing all shapes through base class pointers:
+Drawing Point at (1,2,3)
+Drawing Line from (0,0,0) to (1,1,1)
+Drawing Cube with side 2 at (5,5,5)
+Drawing Sphere with radius 1.5 at (3,3,3)
+Drawing Cuboid 3x2x1 at (1,1,1)
+
+=== Testing Translations ===
+Translating all shapes by (1,1,1):
+Drawing Point at (2,3,4)
+Drawing Line from (1,1,1) to (1,1,1)
+Drawing Cube with side 2 at (6,6,6)
+Drawing Sphere with radius 1.5 at (4,4,4)
+Drawing Cuboid 3x2x1 at (2,2,2)
+
+=== Testing Individual Features ===
+Plane: Drawing Plane at point (0,0,0) with normal vector
+Small cube: Drawing Cube with side 1 at (0,0,0)
+Big sphere: Drawing Sphere with radius 3 at (0,0,0)
+
+=== Test Complete ===
+```
