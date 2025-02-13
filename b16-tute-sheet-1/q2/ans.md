@@ -8,11 +8,13 @@ They should be avoided because they can lead to unexpected behaviour and also le
 
 (b) Determine what the code below does, indicate its design flaws, and improve its design and presentation.
 
+```cpp
 int num,res; void r(int s) {
 while (num>=0) { num = num-s; } num=num+s; res=num;} int main() { num = 10;
 r(4); printf
 ("%d\n" , res
 ) ; }
+```
 
 A: The code defines two variables: num and res. It then defines the function r that has no output and takes an integer s as input. The function then enters a while loop that decrements num by s until it is less than 0. It then adds s to num and assigns it to res. The main function initializes num to 10 and s to 4, calls the function r with s as the argument, and then prints the value of res. 
 
